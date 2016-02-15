@@ -33,7 +33,7 @@ try:
 		dict = {'id':row[4],'date':row[2],'time':row[3],'day':row[2].split()[0],'lat':float(row[1]),'long':float(row[0]),'location':row[5],'content':row[8],'hashtag':hashtag,'nameless':row[7]}
 		
 		try:
-			cur.execute('INSERT INTO tweets VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',(dict['id'],dict['date'],dict['time'],dict['day'],dict['lat'],dict['long'],dict['location'],dict['content'],dict['hashtag'],dict['nameless']));
+			cur.execute('INSERT INTO tweets VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',(dict['id'],dict['date'],dict['time'],dict['day'],dict['lat'],dict['long'],dict['location'],dict['content'],dict['hashtag'],dict['nameless']))
 		except psycopg2.Error as e:
 			print e.pgerror
 	conn.commit()
