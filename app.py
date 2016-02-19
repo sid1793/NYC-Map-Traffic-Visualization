@@ -20,12 +20,11 @@ def displayrandomImage():
 		except Exception,e:
 			print e
 		row = cur.fetchone()
-		bin = psycopg2.Binary(row[0])
-		return render_template("test.html",bindata=base64.b64encode(bin.getquoted()))
+		return render_template("test.html",bindata=base64.b64encode(row[0]).decode('utf-8'))
 	else :
 		return "Cannot execute POST"
 
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":	
 	app.run()
