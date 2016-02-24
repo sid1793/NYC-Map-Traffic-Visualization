@@ -1,0 +1,1 @@
+dbname='postgres' user='sm4083' host='w4111db.eastus.cloudapp.azure.com' password='RPTDAA'
