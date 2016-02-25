@@ -13,14 +13,16 @@ def getDirList( p ):
 
 
 try:
-	conn = psycopg2.connect("dbname='postgres' user='postgres' host='localhost' password='alireliza'")
+	fconf = open ('dbconfig.txt', 'r')
+	conf = fconf.read()
+	conn = psycopg2.connect(conf)
 	conn.autocommit= True
 except Exception, e:
 	print e, "Connection Unsucessful"
 
 cur = conn.cursor()
 
-path = '/home/alireza/workspace/mitsubishi/data/images/'
+path = '../sample_one_week/images/'
 FileList = getDirList(path)
 for year in FileList:
 	if(year == '.DS_Store'): continue
@@ -67,6 +69,7 @@ for year in FileList:
 								cur.execute("INSERT INTO images(content, time, camname) VALUES (%s,\'%s\',\'%s\')" %(bin.getquoted(), timestamp, nameofcamera))
 								
 							except psycopg2.Error as e:
-								print nameofcamera
+								if thirdfile == '0':
+									print nameofcamera
 #								print e.pgerror
 

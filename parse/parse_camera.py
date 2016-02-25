@@ -1,6 +1,8 @@
 import psycopg2
 
-conn = psycopg2.connect("dbname='postgres' user='postgres' host='localhost' password='alireliza'")
+fconf = open ('dbconfig.txt', 'r')
+conf = fconf.read()
+conn = psycopg2.connect(conf)
 conn.autocommit= True
 
 cur = conn.cursor()

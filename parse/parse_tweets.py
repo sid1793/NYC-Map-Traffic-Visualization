@@ -8,12 +8,14 @@ def getDirList( p ):
         a = os.listdir( p )
         return a
 
-conn = psycopg2.connect("dbname='postgres' user='postgres' host='localhost' password='alireliza'")
+fconf = open ('dbconfig.txt', 'r')
+conf = fconf.read()
+conn = psycopg2.connect(conf)
 conn.autocommit= True
 
 cur = conn.cursor()
 
-path = '/home/alireza/workspace/mitsubishi/data/twitter'
+path = '../sample_one_week/twitter'
 FileList = getDirList(path)
 for year in FileList:
 	if(year == '.DS_Store'): continue
