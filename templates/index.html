@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>
+			New York City Visualization
+		</title>
+		<style type="text/css">
+			html, body {
+        		height: 100%;
+        	 	margin: 0;
+        		padding: 0;
+     		 }
+      	#map {
+        height: 100%;
+        width: 50%
+      	}
+		</style>	
+	</head>
+	<body>
+		<div id="map"></div>
+		<img src="data:image/jpeg;base64,{{bindata}}"> 
+		<script type="text/javascript">
+			var map, marker;
+			function initMap(){
+				map = new google.maps.Map(document.getElementById('map'), {
+					center : {lat:40.7529,lng:-73.9942},
+					zoom : 11
+				});
+				var cam_data = {{cam_data|safe}}
+				for (i = 0; i < cam_data.length; i++){
+					marker = new google.maps.Marker({
+						position: new google.maps.LatLng(cam_data[i][1], cam_data[i][2]),
+						map: map,
+						label: cam_data[i][0]
+					});
+					google.maps.event.addListener(marker, "click", function(){
+								var name = [this.getLabel()]
+								$.post("/",{
+     								coordinates : JSON.stringify(name)
+     							});
+						});
+				}
+			}
+		
+		</script>
+		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDLEq36U3wZpIMvK4e_wmhx5GfGO37J-_8&callback=initMap" async defer></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	</body>
+</html>	
