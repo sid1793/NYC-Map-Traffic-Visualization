@@ -5,6 +5,9 @@ from datetime import timedelta
 from datetime import datetime
 from pprint import pprint
 import json
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+import re
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
@@ -13,7 +16,7 @@ app.config['DEBUG'] = True
 # url_for('static', filename='style.css')
 # url_for('static', filename='style.css')
 try:
-	conn = psycopg2.connect("dbname='lsde' user='keying' host='128.59.17.200' password='dvmm32123'")
+	conn = psycopg2.connect("dbname='sm4083' user='sm4083' host='w4111db.eastus.cloudapp.azure.com' password='RPTDAA'")
 	# ////psql -h 128.59.17.200 -U keying -d lsde
 
 	conn.autocommit= True
@@ -41,6 +44,32 @@ def blog():
 def contact():
 	return render_template("contact.html")
 
+@app.route('/coordinates',methods=['POST'])
+def getAndShowCoord():
+	data = json.loads(request.form['coord'])
+	#print data[1]['']
+	qry ="SELECT content from tweets WHERE (lat BETWEEN "+ str(data[3]['lat']) +" and "+ str(data[1]['lat']) +") and (long BETWEEN "+ str(data[1]['lng']) +" and "+ str(data[3]['lng']) +");"
+	try:
+		cur.execute(qry)
+	except Exception,e:
+		print e
+	row = cur.fetchall()
+	print qry
+	print row
+	data = ''
+	for ele in row:
+		tweet = str(ele)
+		for word in tweet.split():
+			word=word.strip('(')
+			word = re.sub(r'[^\w]', '',word.strip(',)'))
+			data+=' %s' %word	
+	print data
+	wordcloud = WordCloud(max_font_size=40, relative_scaling=.5).generate(data)
+	plt.imshow(wordcloud)
+	plt.axis("off")
+	plt.savefig('static/img/wordcloud.png')
+	return 'Showing World Cloud'
+
 @app.route("/images")
 def images():
 	args = request.args
@@ -67,6 +96,7 @@ def images():
 		return "error using base64"
 	print "returning bindata"
 	return bindata
+
 @app.route("/alerts")
 def alerts():
 	args = request.args

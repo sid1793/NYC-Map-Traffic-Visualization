@@ -18,6 +18,24 @@ var gEndTime = new Date('2015-12-05 14:00:00');
 var gStartDate = new Date('2015-12-05 00:00:00');
 var gEndDate = new Date('2015-12-20 00:00:00');
 
+var drawnItems = new L.FeatureGroup();
+map.addLayer(drawnItems);
+        var drawControl = new L.Control.Draw({
+            edit: {
+                featureGroup: drawnItems
+            }
+        });
+        map.addControl(drawControl);
+         map.on('draw:created', function (e) {
+            //setTimeout(sendCoordinates(e.layer.getLatLngs(),1000))
+            console.log(e.layer.getLatLngs());
+            $.post('/coordinates',{
+              coord:JSON.stringify(e.layer.getLatLngs())
+            })
+            document.getElementById('word_cloud').src="static/img/wordcloud.png?" + new Date().getTime();
+            console.log('hi')
+        });
+
 var lastTimeout;
 
 function refreshImage(cName,starttime,endtime,curtime) {//the times are Date object
