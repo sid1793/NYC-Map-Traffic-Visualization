@@ -16,7 +16,7 @@ app.config['DEBUG'] = False
 # url_for('static', filename='style.css')
 # url_for('static', filename='style.css')
 try:
-	conn = psycopg2.connect("dbname='lsde' user='keying' host='128.59.17.200' password='dvmm32123'")
+	conn = psycopg2.connect("dbname='sm4083' user='sm4083' host='w4111db.eastus.cloudapp.azure.com' password='RPTDAA'")
 	# ////psql -h 128.59.17.200 -U keying -d lsde
 
 	conn.autocommit= True
@@ -31,7 +31,6 @@ app.add_url_rule('/favicon.ico', redirect_to=url_for('static', filename='favicon
 
 @app.route('/',methods=["GET","POST"])
 def homepage():
-	def homepage():
 	if request.method == 'GET':
 		try:
 			cur.execute("select distinct name,location_lat,location_long from camera as C, images as I where C.name = I.camname")
