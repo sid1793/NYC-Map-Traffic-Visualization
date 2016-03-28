@@ -31,7 +31,15 @@ app.add_url_rule('/favicon.ico', redirect_to=url_for('static', filename='favicon
 
 @app.route('/',methods=["GET","POST"])
 def homepage():
-	return render_template("index.html")
+	if request.method == 'GET':
+		try:
+			cur.execute("select distinct name,location_lat,location_long from camera as C, images as I where C.name = I.camname")
+		except Exception,e:
+			print e
+	data = cur.fetchall()
+	print data[0]
+	return render_template("index.html", cam_data = json.dumps(data))
+	#return render_template("index.html")
 @app.route("/about.html")
 def about():
 	return render_template("about.html")
@@ -43,32 +51,6 @@ def blog():
 @app.route("/contact.html")
 def contact():
 	return render_template("contact.html")
-
-@app.route('/coordinates',methods=['POST'])
-def getAndShowCoord():
-	data = json.loads(request.form['coord'])
-	#print data[1]['']
-	qry ="SELECT content from tweets WHERE (lat BETWEEN "+ str(data[3]['lat']) +" and "+ str(data[1]['lat']) +") and (long BETWEEN "+ str(data[1]['lng']) +" and "+ str(data[3]['lng']) +");"
-	try:
-		cur.execute(qry)
-	except Exception,e:
-		print e
-	row = cur.fetchall()
-	print qry
-	print row
-	data = ''
-	for ele in row:
-		tweet = str(ele)
-		for word in tweet.split():
-			word=word.strip('(')
-			word = re.sub(r'[^\w]', '',word.strip(',)'))
-			data+=' %s' %word	
-	print data
-	wordcloud = WordCloud(max_font_size=40, relative_scaling=.5).generate(data)
-	plt.imshow(wordcloud)
-	plt.axis("off")
-	plt.savefig('static/img/wordcloud.png')
-	return 'Showing World Cloud'
 
 @app.route("/images")
 def images():
@@ -96,11 +78,10 @@ def images():
 		return "error using base64"
 	print "returning bindata"
 	return bindata
-
 @app.route("/alerts")
 def alerts():
 	args = request.args
-	istype = args.get('istype')
+#	istype = args.get('istype')
 	typename = args.get('typename')
 	startD = args.get('startD')
 	endD = args.get('endD')
@@ -118,34 +99,56 @@ def alerts():
 	print 'startT '+startT
 	print 'endT '+endT
 	#select '12/7/2015, 12:00:00 PM'-date_trunc('day', timestamp '12/7/2015, 12:00:00 PM') as timeonly;
-	if istype == 'true':
+#	if istype == 'true':
 
-		try:
-			cur.execute("SELECT location_lat, location_long from alerts WHERE type= %s \
-						 AND time::date BETWEEN %s and %s \
-						 AND time::time BETWEEN %s and %s;" 
-						 , [typename, startD, endD, startT, endT])
+	try:
+		cur.execute("SELECT location_lat, location_long from alerts WHERE type= %s \
+					 AND time::date BETWEEN %s and %s \
+					 AND time::time BETWEEN %s and %s;" 
+					 , [typename, startD, endD, startT, endT])
 
-		except Exception,e:
-			print e
-			return "cannot find alerts"
-		
-		row = cur.fetchall()
-		print row
+	except Exception,e:
+		print e
+		return "cannot find alerts"
+	
+	row = cur.fetchall()
 #		print "type of row: "+ str(type(row)) + "type of row[0]" + str(type(row[0])) + "type of row[0][0]" + str(type(row[0][0]))
 #		pprint(row)
-		return jsonify(coords = row)
-		#json.dumps(row)
-		
-		# "type: "+istype + ' typename: '+typename
+	return jsonify(coords = row)
+	#json.dumps(row)
+	
+	# "type: "+istype + ' typename: '+typename
 
-		# qry =	"SELECT location_lat,location_long from alerts WHERE type=\'" +str(typename)+ "\' and date_trunc('day', timestamp time)> \'"+ str(startD) +"\' and date_trunc('day', timestamp time) < \'"+ str(endD)+"\';"
-		#try 
-		#"SELECT time from alerts WHERE type=\'" +str(typename)+ "\' and date_trunc('day', timestamp time)> \'12/7/2015\' and date_trunc('day', timestamp time) < \'12/8/2015\';"
-		# SELECT time from alerts A WHERE type='hazard' and date_trunc('day', timestamp A.time) > '12/7/2015' and date_trunc('day', timestamp A.time) < '12/8/2015';
-	else:
-		return "subtype"
-		#qry = 
+	# qry =	"SELECT location_lat,location_long from alerts WHERE type=\'" +str(typename)+ "\' and date_trunc('day', timestamp time)> \'"+ str(startD) +"\' and date_trunc('day', timestamp time) < \'"+ str(endD)+"\';"
+	#try 
+	#"SELECT time from alerts WHERE type=\'" +str(typename)+ "\' and date_trunc('day', timestamp time)> \'12/7/2015\' and date_trunc('day', timestamp time) < \'12/8/2015\';"
+	# SELECT time from alerts A WHERE type='hazard' and date_trunc('day', timestamp A.time) > '12/7/2015' and date_trunc('day', timestamp A.time) < '12/8/2015';
+@app.route('/wordCloud',methods=['POST'])
+def wordCloud():
+	data = json.loads(request.form['coord'])
+	sT= request.form['startTime']
+	sD = request.form['startDate']
+	eT = request.form['endTime']
+	eD = request.form['endDate']
+	qry ="SELECT content from tweets WHERE (lat BETWEEN "+ str(data[3]['lat']) +" and "+ str(data[1]['lat']) +");"
+
+	try:
+		cur.execute(qry)
+	except Exception,e:
+		print e
+	row = cur.fetchall()
+	data = ''
+	for ele in row:
+		tweet = str(ele)
+		for word in tweet.split():
+			word=word.strip('(')
+			word = re.sub(r'[^\w]', '',word.strip(',)'))
+			data+=' %s' %word	
+	wordcloud = WordCloud(max_font_size=40, relative_scaling=.5).generate(data)
+	plt.imshow(wordcloud)
+	plt.axis("off")
+	plt.savefig('static/img/wordcloud.png')
+	return 'Showing World Cloud'
 
 
 
