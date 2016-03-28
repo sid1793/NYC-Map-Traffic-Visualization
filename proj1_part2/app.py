@@ -31,7 +31,15 @@ app.add_url_rule('/favicon.ico', redirect_to=url_for('static', filename='favicon
 
 @app.route('/',methods=["GET","POST"])
 def homepage():
-	return render_template("index.html")
+	if request.method == 'GET':
+		try:
+			cur.execute("select distinct name,location_lat,location_long from camera as C, images as I where C.name = I.camname")
+		except Exception,e:
+			print e
+		data = cur.fetchall()
+		print data[0]
+		return render_template("index.html", cam_data = json.dumps(data))
+	#return render_template("index.html")
 @app.route("/about.html")
 def about():
 	return render_template("about.html")
@@ -44,18 +52,20 @@ def blog():
 def contact():
 	return render_template("contact.html")
 
-@app.route('/coordinates',methods=['POST'])
-def getAndShowCoord():
+@app.route('/wordCloud',methods=['POST'])
+def wordCloud():
 	data = json.loads(request.form['coord'])
-	#print data[1]['']
-	qry ="SELECT content from tweets WHERE (lat BETWEEN "+ str(data[3]['lat']) +" and "+ str(data[1]['lat']) +") and (long BETWEEN "+ str(data[1]['lng']) +" and "+ str(data[3]['lng']) +");"
+	sT= request.form['startTime']
+	sD = request.form['startDate']
+	eT = request.form['endTime']
+	eD = request.form['endDate']
+	qry ="SELECT content from tweets WHERE (lat BETWEEN "+ str(data[3]['lat']) +" and "+ str(data[1]['lat']) +");"
+
 	try:
 		cur.execute(qry)
 	except Exception,e:
 		print e
 	row = cur.fetchall()
-	print qry
-	print row
 	data = ''
 	for ele in row:
 		tweet = str(ele)
@@ -63,7 +73,6 @@ def getAndShowCoord():
 			word=word.strip('(')
 			word = re.sub(r'[^\w]', '',word.strip(',)'))
 			data+=' %s' %word	
-	print data
 	wordcloud = WordCloud(max_font_size=40, relative_scaling=.5).generate(data)
 	plt.imshow(wordcloud)
 	plt.axis("off")

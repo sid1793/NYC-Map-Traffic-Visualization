@@ -27,13 +27,19 @@ map.addLayer(drawnItems);
         });
         map.addControl(drawControl);
          map.on('draw:created', function (e) {
-            //setTimeout(sendCoordinates(e.layer.getLatLngs(),1000))
-            console.log(e.layer.getLatLngs());
-            $.post('/coordinates',{
-              coord:JSON.stringify(e.layer.getLatLngs())
+            var sD = gStartDate.toLocaleDateString();
+            var eD = gEndDate.toLocaleDateString();
+            var sT = gStartTime.toLocaleTimeString();
+            var eT = gEndTime.toLocaleTimeString();
+            $.post('/wordCloud',{
+              coord:JSON.stringify(e.layer.getLatLngs()),
+              startDate: sD,
+              endDate: eD,
+              startTime: sT,
+              endTime: eT
             })
             document.getElementById('word_cloud').src="static/img/wordcloud.png?" + new Date().getTime();
-            console.log('hi')
+            
         });
 
 var lastTimeout;
@@ -159,6 +165,7 @@ var camLayer = L.layerGroup().addTo(map);
 var cams;
 d3.csv("static/data/cam_coordinates.json", function(error, data) {
   cams = data;
+  //cams = {{cam_data|safe}}
   // var starttime = new Date(extent[0]);//this data need to be obtained from the brush//'2015-12-07 07:00:03'
   // var endtime = new Date(extent[1]);//'2015-12-08 08:15:00'
 //this is for fixed time
@@ -168,7 +175,9 @@ d3.csv("static/data/cam_coordinates.json", function(error, data) {
 
     //console.log(cams[0],cams[0].lat,cams[0].log, cams.length, cams[0].camera);
   for(var i = 0; i<cams.length; ++i){
+    ///console.log()
     var marker = L.marker([cams[i].lat,cams[i].log], {icon: cam},{title: cams[i].camera}).addTo(map);
+    //var marker = L.marker([cams[i][1],cams[i][2]], {icon: cam},{title: cams[i][0]}).addTo(map);
     window.markers.push(marker);
     camLayer.addLayer(marker);
     //marker.bindPopup("<img src=\"\" alt=\"camera_image\" name=\"myCam\" width=\"305\" height=\"210\" border=\"0\" align=\"middle\" id=\"myPic\"><br>"+cams[i].camera);//originally width=\"352\" height=\"240\"
@@ -271,17 +280,7 @@ var heatType = "car";
 
 // (It's CSV, but GitHub Pages only gzip's JSON at the moment.)
 d3.csv("static/data/data.json", function(error, data) {
-
-
-
-
-
-
-
-
-
-
-
+  
   var norm_den = 24.0;
   var norm_req = false;
 
