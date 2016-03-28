@@ -5,6 +5,9 @@ from datetime import timedelta
 from datetime import datetime
 from pprint import pprint
 import json
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+import re
 
 app = Flask(__name__)
 app.config['DEBUG'] = False
@@ -28,7 +31,16 @@ app.add_url_rule('/favicon.ico', redirect_to=url_for('static', filename='favicon
 
 @app.route('/',methods=["GET","POST"])
 def homepage():
-	return render_template("index.html")
+	def homepage():
+	if request.method == 'GET':
+		try:
+			cur.execute("select distinct name,location_lat,location_long from camera as C, images as I where C.name = I.camname")
+		except Exception,e:
+			print e
+	data = cur.fetchall()
+	print data[0]
+	return render_template("index.html", cam_data = json.dumps(data))
+	#return render_template("index.html")
 @app.route("/about.html")
 def about():
 	return render_template("about.html")
@@ -112,7 +124,32 @@ def alerts():
 	#try 
 	#"SELECT time from alerts WHERE type=\'" +str(typename)+ "\' and date_trunc('day', timestamp time)> \'12/7/2015\' and date_trunc('day', timestamp time) < \'12/8/2015\';"
 	# SELECT time from alerts A WHERE type='hazard' and date_trunc('day', timestamp A.time) > '12/7/2015' and date_trunc('day', timestamp A.time) < '12/8/2015';
+@app.route('/wordCloud',methods=['POST'])
+def wordCloud():
+	data = json.loads(request.form['coord'])
+	sT= request.form['startTime']
+	sD = request.form['startDate']
+	eT = request.form['endTime']
+	eD = request.form['endDate']
+	qry ="SELECT content from tweets WHERE (lat BETWEEN "+ str(data[3]['lat']) +" and "+ str(data[1]['lat']) +");"
 
+	try:
+		cur.execute(qry)
+	except Exception,e:
+		print e
+	row = cur.fetchall()
+	data = ''
+	for ele in row:
+		tweet = str(ele)
+		for word in tweet.split():
+			word=word.strip('(')
+			word = re.sub(r'[^\w]', '',word.strip(',)'))
+			data+=' %s' %word	
+	wordcloud = WordCloud(max_font_size=40, relative_scaling=.5).generate(data)
+	plt.imshow(wordcloud)
+	plt.axis("off")
+	plt.savefig('static/img/wordcloud.png')
+	return 'Showing World Cloud'
 
 
 
