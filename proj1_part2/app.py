@@ -16,7 +16,7 @@ app.config['DEBUG'] = True
 # url_for('static', filename='style.css')
 # url_for('static', filename='style.css')
 try:
-	conn = psycopg2.connect("dbname='sm4083' user='sm4083' host='w4111db.eastus.cloudapp.azure.com' password='RPTDAA'")
+	conn = psycopg2.connect("dbname='lsde' user='keying' host='128.59.17.200' password='dvmm32123'")
 	# ////psql -h 128.59.17.200 -U keying -d lsde
 
 	conn.autocommit= True

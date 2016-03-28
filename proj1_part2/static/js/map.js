@@ -38,6 +38,9 @@ map.addLayer(drawnItems);
 
 var lastTimeout;
 
+var time_updated_for_images = false;
+
+
 function refreshImage(cName,starttime,endtime,curtime) {//the times are Date object
 
   //console.log("refreshImage")
@@ -73,23 +76,14 @@ function refreshImage(cName,starttime,endtime,curtime) {//the times are Date obj
     });
     curtime = nexttime;
   }
-  //console.log("data get, "+ dat);
-  //console.log(dat);
-  //document.getElementById(imageID).src = "data:image/jpeg;base64, " + data;//+'?math='+Math.random()
-  //document.getElementById(imageID).innerHTML="<img src='data:image/jpeg;base64, "+data+"'/>";//"data:image/jpeg;base64, "+data;//+'?math='+Math.random()
 
-  //$(popup._contentNode).html("<img src=\"data:image/jpeg;base64, "+ data +"\" alt=\"camera_image\" width=\"305\" height=\"210\" border=\"0\" align=\"middle\" id=\"myPic\"><br><p>"+cName+"</p>");
-  //popup.setContent("<img src=\"data:image/jpeg;base64, "+ data +"\" alt=\"camera_image\" width=\"305\" height=\"210\" border=\"0\" align=\"middle\" id=\"myPic\"><br><p>"+cName+"</p>");
-  //popup.setContent();
-  
-  if(cName == gCamName && starttime.getTime() == gStartTime.getTime() && endtime.getTime() == gEndTime.getTime() ){
-    lastTimeout = setTimeout(refreshImage,1000,cName,starttime,endtime,curtime);
-  }else{
-//    if(cName == gCamName){
-      lastTimeout = setTimeout(refreshImage,1000,gCamName,gStartTime,gEndTime,gStartTime);
-//    }
+  if (time_updated_for_images){
+    lastTimeout = setTimeout(refreshImage,1000,gCamName,gStartTime,gEndTime,gStartTime);
+    time_updated_for_images = false;
   }
-    
+  else
+    lastTimeout = setTimeout(refreshImage,1000,cName,starttime,endtime,curtime);
+
 }
 
 
@@ -677,7 +671,8 @@ d3.csv("static/data/data.json", function(error, data) {
 			gEndDate = new Date('2016-02-03 00:00:00');
 		  }
       }
-	  alert_type(false,"");
+	     alert_type(false,"");
+      time_updated_for_images = true;
     });
 
     chart.margin = function(_) {

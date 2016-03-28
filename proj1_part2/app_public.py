@@ -31,7 +31,6 @@ app.add_url_rule('/favicon.ico', redirect_to=url_for('static', filename='favicon
 
 @app.route('/',methods=["GET","POST"])
 def homepage():
-	def homepage():
 	if request.method == 'GET':
 		try:
 			cur.execute("select distinct name,location_lat,location_long from camera as C, images as I where C.name = I.camname")
