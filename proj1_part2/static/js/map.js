@@ -20,27 +20,36 @@ var gEndDate = new Date('2015-12-20 00:00:00');
 
 var drawnItems = new L.FeatureGroup();
 map.addLayer(drawnItems);
-        var drawControl = new L.Control.Draw({
-            edit: {
-                featureGroup: drawnItems
-            }
-        });
-        map.addControl(drawControl);
-         map.on('draw:created', function (e) {
-            var sD = gStartDate.toLocaleDateString();
-            var eD = gEndDate.toLocaleDateString();
-            var sT = gStartTime.toLocaleTimeString();
-            var eT = gEndTime.toLocaleTimeString();
-            $.post('/wordCloud',{
-              coord:JSON.stringify(e.layer.getLatLngs()),
-              startDate: sD,
-              endDate: eD,
-              startTime: sT,
-              endTime: eT
-            })
-            document.getElementById('word_cloud').src="static/img/wordcloud.png?" + new Date().getTime();
-            
-        });
+var drawControl = new L.Control.Draw({
+    edit: {
+        featureGroup: drawnItems
+    }
+});
+
+map.addControl(drawControl);
+ map.on('draw:created', function (e) {
+    latest_bounding_box = e.layer.getLatLngs();
+    console.log (latest_bounding_box);
+    update_wordcloud ();
+});
+
+var latest_bounding_box;
+
+function update_wordcloud ()
+{
+    var sD = gStartDate.toLocaleDateString();
+    var eD = gEndDate.toLocaleDateString();
+    var sT = gStartTime.toLocaleTimeString();
+    var eT = gEndTime.toLocaleTimeString();
+    $.post('/wordCloud',{
+      coord:JSON.stringify(latest_bounding_box),
+      startDate: sD,
+      endDate: eD,
+      startTime: sT,
+      endTime: eT
+    });
+    document.getElementById('word_cloud').src="static/img/wordcloud.png?" + new Date().getTime();  
+}
 
 var lastTimeout;
 
@@ -202,6 +211,7 @@ d3.csv("static/data/cam_coordinates.json", function(error, data) {
         }
         else {
           gCamName = e.target._popup._content;
+          time_updated_for_images = true;
         }
       }      
       //when using fixed time
@@ -670,8 +680,9 @@ d3.csv("static/data/data.json", function(error, data) {
 			gEndDate = new Date('2016-02-03 00:00:00');
 		  }
       }
-	     alert_type(false,"");
+	    alert_type(false,"");
       time_updated_for_images = true;
+      update_wordcloud ();
     });
 
     chart.margin = function(_) {
