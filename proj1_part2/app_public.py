@@ -10,13 +10,13 @@ import matplotlib.pyplot as plt
 import re
 
 app = Flask(__name__)
-app.config['DEBUG'] = False
+app.config['DEBUG'] = True
 
 # url_for('static', filename='style.css')
 # url_for('static', filename='style.css')
 # url_for('static', filename='style.css')
 try:
-	conn = psycopg2.connect("dbname='lsde' user='keying' host='128.59.17.200' password='dvmm32123'")
+	conn = psycopg2.connect("dbname='sm4083' user='sm4083' host='w4111db.eastus.cloudapp.azure.com' password='RPTDAA'")
 	# ////psql -h 128.59.17.200 -U keying -d lsde
 
 	conn.autocommit= True
@@ -61,7 +61,7 @@ def images():
 	querystring = request.query_string
 	#datetime.strptime("2015-12-07 00:01:02", "%Y-%m-%d %H:%M:%S") #this should be put to the frontend
 	qry = "SELECT content from images WHERE camname=\'" +str(camname)+ "\' and time> \'"+ str(starttime) +"\' and time < \'"+ str(endtime)+"\';"
-	print qry
+	#print qry
 	try:
 		cur.execute(qry)
 	except Exception,e:
@@ -76,7 +76,7 @@ def images():
 	except Exception, e:
 		print e
 		return "error using base64"
-	print "returning bindata"
+	#print "returning bindata"
 	return bindata
 @app.route("/alerts")
 def alerts():
@@ -94,10 +94,10 @@ def alerts():
 
 	# print 'start '+start
 	# print 'end '+end
-	print 'startD '+startD
-	print 'endD '+endD
-	print 'startT '+startT
-	print 'endT '+endT
+	#print 'startD '+startD
+	#print 'endD '+endD
+	#print 'startT '+startT
+	#print 'endT '+endT
 	#select '12/7/2015, 12:00:00 PM'-date_trunc('day', timestamp '12/7/2015, 12:00:00 PM') as timeonly;
 #	if istype == 'true':
 
@@ -131,7 +131,7 @@ def wordCloud():
 	eT = request.form['endTime']
 	eD = request.form['endDate']
 	qry ="SELECT content from tweets WHERE (lat BETWEEN "+ str(data[3]['lat']) +" and "+ str(data[1]['lat']) +");"
-
+	print 'hello'
 	try:
 		cur.execute(qry)
 	except Exception,e:
