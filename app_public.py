@@ -97,12 +97,6 @@ def wordCloud():
 	eT = request.form['endTime']
 	eD = request.form['endDate']
 
-
-	print ("%s, %s, %s, %s" %(data[3]['lat'], data[1]['lat'], data[3]['lng'], data[1]['lng']))
-	print ("%s, %s, %s, %s" %(sD, eD, sT, eT))
-
-
-	print 'hello'
 	try:
 		cur.execute("SELECT content from tweets WHERE \
 					 	 lat BETWEEN %s and %s		  \
@@ -131,17 +125,6 @@ def wordCloud():
 if __name__ == "__main__":	
 	app.run(host='0.0.0.0')
 
-# return jsonify({ 
-#         'text': microsoft_translate(
-#             request.form['text'], 
-#             request.form['sourceLang'], 
-#             request.form['destLang']) })
-#cur.close()
-#conn.close()
-
-
-# import json
-# return json.dumps(list))
 
 
 
