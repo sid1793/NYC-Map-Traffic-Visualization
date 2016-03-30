@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import re
 
 app = Flask(__name__)
-app.config['DEBUG'] = False
+app.config['DEBUG'] = True
 
 # url_for('static', filename='style.css')
 # url_for('static', filename='style.css')
@@ -125,15 +125,24 @@ def alerts():
 	# SELECT time from alerts A WHERE type='hazard' and date_trunc('day', timestamp A.time) > '12/7/2015' and date_trunc('day', timestamp A.time) < '12/8/2015';
 @app.route('/wordCloud',methods=['POST'])
 def wordCloud():
+
 	data = json.loads(request.form['coord'])
+
 	sT= request.form['startTime']
 	sD = request.form['startDate']
 	eT = request.form['endTime']
 	eD = request.form['endDate']
-	qry ="SELECT content from tweets WHERE (lat BETWEEN "+ str(data[3]['lat']) +" and "+ str(data[1]['lat']) +");"
+
+	print ("%s, %s, %s, %s" %(data[3]['lat'], data[1]['lat'], data[3]['lng'], data[1]['lng']))
+	print ("%s, %s, %s, %s" %(sD, eD, sT, eT))
 
 	try:
-		cur.execute(qry)
+		cur.execute("SELECT content from tweets WHERE \
+					 	 lat BETWEEN %s and %s		  \
+					 AND long BETWEEN %s and %s		  \
+					 AND time::date BETWEEN %s and %s \
+					 AND time::time BETWEEN %s and %s;" 
+					 , [data[3]['lat'], data[1]['lat'], data[1]['lng'], data[3]['lng'], sD, eD, sT, eT])
 	except Exception,e:
 		print e
 	row = cur.fetchall()
@@ -144,7 +153,7 @@ def wordCloud():
 			word=word.strip('(')
 			word = re.sub(r'[^\w]', '',word.strip(',)'))
 			data+=' %s' %word	
-	wordcloud = WordCloud(max_font_size=40, relative_scaling=.5).generate(data)
+	wordcloud = WordCloud(background_color="white", max_font_size=40, relative_scaling=.5).generate(data)
 	plt.imshow(wordcloud)
 	plt.axis("off")
 	plt.savefig('static/img/wordcloud.png')
