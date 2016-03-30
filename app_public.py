@@ -12,6 +12,9 @@ import re
 app = Flask(__name__)
 app.config['DEBUG'] = True
 
+try:
+	conn = psycopg2.connect("dbname='sm4083' user='sm4083' host='w4111db.eastus.cloudapp.azure.com' password='RPTDAA'")
+	# ////psql -h 128.59.17.200 -U keying -d lsde
 
 try:
 	conn = psycopg2.connect("dbname='sm4083' user='sm4083' host='w4111db.eastus.cloudapp.azure.com' password='RPTDAA'")
@@ -90,17 +93,27 @@ def alerts():
 
 @app.route('/wordCloud',methods=['POST'])
 def wordCloud():
+
 	data = json.loads(request.form['coord'])
+
 	sT= request.form['startTime']
 	sD = request.form['startDate']
 	eT = request.form['endTime']
 	eD = request.form['endDate']
-	#qry ="SELECT content from tweets WHERE lat BETWEEN %s and %s and long BETWEEN %s and %s and time::date BETWEEN %s and %s and time::time BETWEEN %s and %s;" %(str(data[3]['lat']), str(data[1]['lat']),str(data[1]['lng']), str(data[3]['lng']),sD,eD,sT,eT) 
-	qry ="SELECT content from tweets WHERE lat BETWEEN %s and %s and long BETWEEN %s and %s" %(str(data[3]['lat']), str(data[1]['lat']),str(data[1]['lng']), str(data[3]['lng']))
+
+
+	print ("%s, %s, %s, %s" %(data[3]['lat'], data[1]['lat'], data[3]['lng'], data[1]['lng']))
+	print ("%s, %s, %s, %s" %(sD, eD, sT, eT))
+
 
 	print 'hello'
 	try:
-		cur.execute(qry)
+		cur.execute("SELECT content from tweets WHERE \
+					 	 lat BETWEEN %s and %s		  \
+					 AND long BETWEEN %s and %s		  \
+					 AND time::date BETWEEN %s and %s \
+					 AND time::time BETWEEN %s and %s;" 
+					 , [data[3]['lat'], data[1]['lat'], data[1]['lng'], data[3]['lng'], sD, eD, sT, eT])
 	except Exception,e:
 		print e
 	row = cur.fetchall()
@@ -111,7 +124,7 @@ def wordCloud():
 			word=word.strip('(')
 			word = re.sub(r'[^\w]', '',word.strip(',)'))
 			data+=' %s' %word	
-	wordcloud = WordCloud(max_font_size=40, relative_scaling=.5).generate(data)
+	wordcloud = WordCloud(background_color="white", max_font_size=40, relative_scaling=.5).generate(data)
 	plt.imshow(wordcloud)
 	plt.axis("off")
 	plt.savefig('static/img/wordcloud.png')
