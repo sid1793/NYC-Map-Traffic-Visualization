@@ -14,10 +14,6 @@ app.config['DEBUG'] = True
 
 try:
 	conn = psycopg2.connect("dbname='sm4083' user='sm4083' host='w4111db.eastus.cloudapp.azure.com' password='RPTDAA'")
-	# ////psql -h 128.59.17.200 -U keying -d lsde
-
-try:
-	conn = psycopg2.connect("dbname='sm4083' user='sm4083' host='w4111db.eastus.cloudapp.azure.com' password='RPTDAA'")
 	conn.autocommit= True
 except Exception, e:
 	print e, "Connection Unsucessful"
