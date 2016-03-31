@@ -26,6 +26,26 @@ var drawControl = new L.Control.Draw({
     }
 });
 
+
+var wazenumber = 0;
+
+function setWazeNumber(wazenumber){
+  document.getElementById("waze").innerHTML = wazenumber
+}
+
+function createEvent2(){
+  eventname = document.getElementById('eventname').value;
+  sT = gStartTime.toLocaleTimeString();
+  sD = gStartDate.toLocaleDateString();
+  $.post('/event',{
+    event_name:eventname,
+    bbox:JSON.stringify(latest_bounding_box),
+    startTime:sT,
+    startDate:sD
+  }
+  );
+}
+
 map.addControl(drawControl);
  map.on('draw:created', function (e) {
     latest_bounding_box = e.layer.getLatLngs();
@@ -34,6 +54,16 @@ map.addControl(drawControl);
 });
 
 var latest_bounding_box;
+
+
+function wazelevel(a){
+  $.post('/wazeAlert',{
+    level:a
+  },function getData(data){
+  console.log('Hi')
+  document.getElementById('waze').innerHTML = data.num
+  });
+}
 
 function update_wordcloud ()
 {
@@ -98,6 +128,16 @@ function refreshImage(cName,starttime,endtime,curtime) {//the times are Date obj
   }
   else
     lastTimeout = setTimeout(refreshImage,1000,cName,starttime,endtime,curtime);
+
+  $.post("/objects",{
+          name : JSON.stringify(cName)
+      },function(data){
+        console.log(typeof(data))
+        data = JSON.parse(data)
+        document.getElementById("car").innerHTML=data[0];
+        document.getElementById("bus").innerHTML=data[1];
+        document.getElementById("person").innerHTML=data[2];
+      });
 
 }
 
@@ -191,8 +231,7 @@ d3.csv("static/data/cam_coordinates.json", function(error, data) {
     window.markers[i].on('click',function(e){//window.markers[i].title
       //console.log(window.markers[i]);
       //console.log(e.target._popup._content);
-
-
+     
       if (!imageOn){
         imageOn = true;
         gCamName = e.target._popup._content;

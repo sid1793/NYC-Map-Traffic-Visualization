@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, url_for, jsonify
+from flask import Flask, render_template, request, url_for, jsonify,Response
 import psycopg2
 import base64
 from datetime import timedelta
@@ -13,7 +13,7 @@ app = Flask(__name__)
 app.config['DEBUG'] = True
 
 try:
-	conn = psycopg2.connect("dbname='sm4083' user='sm4083' host='w4111db.eastus.cloudapp.azure.com' password='RPTDAA'")
+	conn = psycopg2.connect("dbname='az2407' user='az2407' host='w4111db.eastus.cloudapp.azure.com' password='LXSZEJ'")
 	conn.autocommit= True
 except Exception, e:
 	print e, "Connection Unsucessful"
@@ -120,7 +120,47 @@ def wordCloud():
 	plt.savefig('static/img/wordcloud.png')
 	return 'Showing World Cloud'
 
+@app.route("/objects",methods =['POST'])
+def sendCount():
+	camname = json.loads(request.form['name'])
+	row = []
+	for i in range(3):
+		qry = "select count(*) from (select imageid from images where camname=\'"+str(camname)+"\') as I, (select imageid from detection_in where objid="+str((i+1))+") as D where I.imageid=D.imageid;" 
+		try:
+			cur.execute(qry)
+		except Exception,e:
+			print e
+		row.append(int(list(cur.fetchone())[0]))
+	print row
+	return json.dumps(row)
 
+@app.route("/wazeAlert",methods=['POST'])
+def wazeLevel():
+	level = int(json.loads(request.form['level']))
+	print level
+	qry = "select count(*) from tweets as T, (select location_lat, location_long, time from jams where level="+str(level)+" limit 200) as J where T.lat between J.location_lat-0.001 and J.location_lat+0.001 and T.long between J.location_long-0.001 and J.location_long+0.001 and T.time - J.time < interval '1 hour';"
+	print qry
+	try:
+		cur.execute(qry)
+	except Exception,e:
+		print e
+	number = int(cur.fetchone()[0])
+	print number
+	return jsonify(num=number)
+
+@app.route("/event",methods=['POST'])
+def createEvent():
+	name = str(request.form['event_name'])
+	data = json.loads(request.form['bbox'])
+	sT= request.form['startTime']
+	sD = request.form['startDate']
+	qry = "Insert into event(name,date,time,lat1,long1,lat2,long2) values(\'%s\',\'%s\',\'%s\',%s,%s,%s,%s);" %(name,sD,sT,data[3]['lat'], data[1]['lat'], data[1]['lng'], data[3]['lng'])
+	print qry
+	try:
+		cur.execute(qry)
+	except Exception,e:
+		print e
+	return "inserted data"
 
 if __name__ == "__main__":	
 	app.run(host='0.0.0.0')
