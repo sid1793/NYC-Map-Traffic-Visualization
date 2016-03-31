@@ -51,22 +51,6 @@ var drawControl = new L.Control.Draw({
 
 var wazenumber = 0;
 
-function setWazeNumber(wazenumber){
-  document.getElementById("waze").innerHTML = wazenumber
-}
-
-function createEvent2(){
-  eventname = document.getElementById('eventname').value;
-  sT = gStartTime.toLocaleTimeString();
-  sD = gStartDate.toLocaleDateString();
-  $.post('/event',{
-    event_name:eventname,
-    bbox:JSON.stringify(latest_bounding_box),
-    startTime:sT,
-    startDate:sD
-  }
-  );
-}
 
 map.addControl(drawControl);
 map.on('draw:created', function (e) {
@@ -132,51 +116,50 @@ $.get( "/camcoords",{}, function( data, status ) {//
   }
 });
 
-// add dot-map layer
 
-var alertLayer = L.layerGroup().addTo(map);
 
-// HEATMAP
 
-var heatmap = new L.TileLayer.HeatCanvas({},{'step':1,
+////////////////// dot map and heat map
+
+
+var wt_dotLayer = L.layerGroup();//.addTo(map)
+var wt_switched = false;
+var wt_heatLayer = new L.TileLayer.HeatCanvas({},{'step':1,
 'degree':HeatCanvas.LINEAR, 'opacity':0.7});
+var typeorsub = true;
+
+
+document.getElementById("radioHeat").onclick=function ()
+  {
+    wt_switched = true;
+    if(map.hasLayer(wt_dotLayer)){
+      map.removeLayer(wt_dotLayer);
+    }
+    if(!map.hasLayer(wt_heatLayer)){
+      map.addLayer(wt_heatLayer);
+    }
+    console.log("show heat-map");
+  };
+document.getElementById("radioDot").onclick=function ()
+  {
+    wt_switched = true;
+    if(map.hasLayer(wt_heatLayer)){
+      map.removeLayer(wt_heatLayer);
+    }
+    if(!map.hasLayer(wt_dotLayer)){
+      map.addLayer(wt_dotLayer);
+    }
+    console.log("show dot-map");
+  };
+
 
 var baseMaps = {};
 var overlayMaps ={
   "Cams":camLayer,
-  "Dotmap":alertLayer,
-  "Heatmap":heatmap
+  "Dotmap":wt_dotLayer,
+  "Heatmap":wt_heatLayer
 };
 L.control.layers(baseMaps,overlayMaps).addTo(map);
-
-document.getElementById("radio1").onclick=function (heatRadio)
-{
-heatmap_switched = true;
-window.heatType = "bus";  
-renderAll ();
-};
-document.getElementById("radio2").onclick=function (heatRadio)
-{
-heatmap_switched = true;
-window.heatType = "car";  
-renderAll ();
-};
-document.getElementById("radio3").onclick=function (heatRadio)
-{
-heatmap_switched = true;
-window.heatType = "person";  
-renderAll ();
-};
-
-var chb_norm = document.getElementById("heatmap_normal");
-chb_norm.onchange=function ()
-{
-  if (chb_norm.checked)
-    norm_req = true;
-  else
-    norm_req = false;
-  renderAll ();
-};
 
 
 // time selection plots
@@ -231,7 +214,7 @@ $.get( "/alltweets",{}, function( data, status ) {
         .x(d3.time.scale()
           // .domain([new Date(2015, 10, 1), new Date(2015, 11, 31)])
           .domain([new Date(2015, 11, 1), new Date(2016, 1, 3)])
-          .rangeRound([0, 10 * 60]))
+          .rangeRound([0, 22 * 30]))
           // .filter([new Date(2015, 11, 1), new Date(2015, 11, 20)])
         .filter([new Date(2015, 11, 5), new Date(2015, 11, 20)])
   ];
@@ -250,6 +233,23 @@ $.get( "/alltweets",{}, function( data, status ) {
 
 ///////// FUNCTIONS
 
+
+function setWazeNumber(wazenumber){
+  document.getElementById("waze").innerHTML = wazenumber
+}
+
+function createEvent2(){
+  eventname = document.getElementById('eventname').value;
+  sT = gStartTime.toLocaleTimeString();
+  sD = gStartDate.toLocaleDateString();
+  $.post('/event',{
+    event_name:eventname,
+    bbox:JSON.stringify(latest_bounding_box),
+    startTime:sT,
+    startDate:sD
+  }
+  );
+}
 
 function wazelevel(a){
   $.post('/wazeAlert',{
@@ -332,29 +332,53 @@ function refreshImage(cName,starttime,endtime,curtime) {//the times are Date obj
 }
 
 
-function alert_type(type,name){//e.g.true, hazard
+function waze_twitter(type_sub, change, name){
   
-  if (type){
-		alerttype = name;
-		var alertBtn = document.getElementById("alertBtn");
-		alertBtn.innerHTML=name+"<span class='caret'></span>";
+  if (change){
+    datatype = name;
+    typeorsub = type_sub
+    var alertBtn = document.getElementById("alertBtn");
+    alertBtn.innerHTML=name+"<span class='caret'></span>";
   }
-  
+
+
+  var keywords = "";
+  if(datatype == 'TWITTER'){
+    //
+    console.log("twitter")
+    keywords = document.getElementById("tweets_keywords").value;
+    console.log(keywords);
+  }
+
   var sD = gStartDate.toLocaleDateString();
   var eD = gEndDate.toLocaleDateString();
   var sT = gStartTime.toLocaleTimeString();
   var eT = gEndTime.toLocaleTimeString();
 
-  $.get( "/alerts",{typename:alerttype, startD: sD, startT: sT, endD: eD, endT: eT}, function( data, status ) {//
+  $.get( "/waze_twitter",{type_sub: typeorsub, typename: datatype, startD: sD, startT: sT, endD: eD, endT: eT, keywords: keywords}, function( data, status ) {//
+    //startDT and endDT are does not have real meaning here,  gStartTime.toLocalString gEndTime
+    //it should be break down into time and date on the backend
+    //data should be a json
+    //need to add code in render all for drawing layer.
     alertsLOC = data.coords;
-    console.log(alertsLOC[0]);
-
-    console.log(alertsLOC.length);
-    alertLayer.clearLayers();
+    // console.log(alertsLOC[0]);
+    //console.log(alertsLOC.length);
+    wt_dotLayer.clearLayers();
+    wt_heatLayer.data = [];
     for (var i = alertsLOC.length - 1; i >= 0; i--) {
+      // circles.push(L.circle(alertsLOC[i], 50, { color: 'red', fillColor: '#f03', fillOpacity: 0.5 }));
       var c = L.circle(alertsLOC[i], 20, { color : 'green', opacity:1, fillColor: 'green',fillOpacity: 1 });
-      alertLayer.addLayer(c);
+      wt_dotLayer.addLayer(c);
+      window.wt_heatLayer.pushData(alertsLOC[i][0], alertsLOC[i][1], 10); 
+
     }
+    if(alertsLOC.length == 0){
+      window.wt_heatLayer.pushData(40.7841484, -73.9661407, 0); 
+    }
+    if(document.getElementById("radioHeat").checked){
+      wt_heatLayer.redraw();
+      console.log("redrawing the heat-map");
+    } 
 
   });
 
@@ -380,6 +404,12 @@ function renderHeat ()
 	}
 }
 */
+
+function search_tweets(){
+  waze_twitter(false, true, 'TWITTER');
+  console.log("in search_tweets");
+  //check if radio on
+}
 
 
 function setTime(time,num){
@@ -607,18 +637,18 @@ function switch_heatmap(){
         div.select("#clip-" + id + " rect").attr("x", null).attr("width", "100%");
         dimension.filterAll();
 
-		if(id == 0){
-			gStartTime = new Date('2015-12-05 00:00:00');
-			gEndTime = new Date('2015-12-05 23:59:59');
-		}else{
-			gStartDate = new Date('2015-12-01 00:00:00');
-			gEndDate = new Date('2016-02-03 00:00:00');
-		}
+    		if(id == 0){
+    			gStartTime = new Date('2015-12-05 00:00:00');
+    			gEndTime = new Date('2015-12-05 23:59:59');
+    		}else{
+    			gStartDate = new Date('2015-12-01 00:00:00');
+    			gEndDate = new Date('2016-02-03 00:00:00');
+    	  }
       }
 
-	  alert_type(false,"");
       time_updated_for_images = true;
       update_wordcloud ();
+	    waze_twitter(false, false, "");
 
     });
 

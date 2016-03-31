@@ -11,6 +11,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import re
 import random
+import shlex
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
@@ -83,27 +84,79 @@ def images():
 		print e
 		return "error using base64"
 	return bindata
-@app.route("/alerts")
-def alerts():
+
+
+@app.route("/waze_twitter")
+def waze_twitter():
 	args = request.args
+	type_sub = args.get('type_sub')
 	typename = args.get('typename')
 	startD = args.get('startD')
 	endD = args.get('endD')
 	startT = args.get('startT')
 	endT = args.get('endT')
-	
-	try:
-		cur.execute("SELECT location_lat, location_long from alerts WHERE type= %s \
-					 AND time::date BETWEEN %s and %s \
-					 AND time::time BETWEEN %s and %s;" 
-					 , [typename, startD, endD, startT, endT])
+	keywords = args.get('keywords')
+	qry = ""
+	print("Keywords: "+str(keywords))
+	if(typename == 'TWITTER'):
+		#do something
+		#parse the data
+		print("for TWITTER")
+		words=shlex.split(keywords)
+		print(words)
 
-	except Exception,e:
-		print e
-		return "cannot find alerts"
+		qry = "SELECT lat, long from tweets WHERE time::date BETWEEN '"+startD+"' and '"+endD+"' \
+					 AND time::time BETWEEN '"+startT+"' and '"+endT+"'"
+		for word in words:
+			qry+= " AND content LIKE '%"
+			qry+= word
+			qry+="%' "
+		qry+=";"
+		print qry
+		try:
+			cur.execute(qry)
+		except Exception,e:
+			print e
+			return "cannot find tweets"
+		
+
+	# print 'startD '+startD
+	# print 'endD '+endD
+	# print 'startT '+startT
+	# print 'endT '+endT
+	#select '12/7/2015, 12:00:00 PM'-date_trunc('day', timestamp '12/7/2015, 12:00:00 PM') as timeonly;
+	#	if istype == 'true':
+
+	# select content from tweets where time > '2016-02-01 16:30:00' and content like '%Sales%' and content like '%New%';
+	else:
+		if(type_sub=='true'):
+			print("SELECT location_lat, location_long from alerts WHERE type= %s \
+						 AND time::date BETWEEN %s and %s \
+						 AND time::time BETWEEN %s and %s;" 
+						 , [typename, startD, endD, startT, endT])
+			try:
+				cur.execute("SELECT location_lat, location_long from alerts WHERE type= %s \
+						 AND time::date BETWEEN %s and %s \
+						 AND time::time BETWEEN %s and %s;" 
+						 , [typename, startD, endD, startT, endT])
+			except Exception,e:
+				print e
+				return "cannot find alerts"
+		else:
+			try:
+				cur.execute("SELECT location_lat, location_long from alerts WHERE subtype= %s \
+						 AND time::date BETWEEN %s and %s \
+						 AND time::time BETWEEN %s and %s;" 
+						 , [typename, startD, endD, startT, endT])
+			except Exception,e:
+				print e
+				return "cannot find alerts"
 	
 	row = cur.fetchall()
+#		print "type of row: "+ str(type(row)) + "type of row[0]" + str(type(row[0])) + "type of row[0][0]" + str(type(row[0][0]))
+#		pprint(row)
 	return jsonify(coords = row)
+
 
 @app.route('/wordCloud',methods=['POST'])
 def wordCloud():
@@ -135,7 +188,7 @@ def wordCloud():
 	wordcloud = WordCloud(background_color="white", max_font_size=40, relative_scaling=.5).generate(data)
 	plt.imshow(wordcloud)
 	plt.axis("off")
-	plt.savefig('static/img/wordcloud.png')
+	plt.savefig('static/img/wordcloud.png', bbox_inches='tight')
 	return 'Showing World Cloud'
 
 @app.route("/objects",methods =['POST'])
