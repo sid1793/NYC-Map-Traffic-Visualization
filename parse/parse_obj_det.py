@@ -3,7 +3,7 @@ import random
 
 fconf = open ('dbconfig.txt', 'r')
 conf = fconf.read()
-conn = psycopg2.connect(conf)
+conn = psycopg2.connect("dbname='az2407' user='az2407' host='w4111db.eastus.cloudapp.azure.com' password='LXSZEJ'")
 conn.autocommit= True
 cur = conn.cursor()
 
@@ -19,7 +19,7 @@ conn.commit()
 for idx in range (1, 10000):
 	row = {}
 	row ['imageid'] = idx
-	row ['objid'] = 1
+	row ['objid'] = random.randint(7,9)
 	row ['bbox_x'] = random.randint (1, 200)
 	row ['bbox_y'] = random.randint (1, 100)
 	row ['bbox_w'] = random.randint (10, 50)

@@ -1,1 +1,1 @@
-dbname='postgres' user='postgres' host='localhost' password='alireliza'
+dbname=‘az2407’ user=‘az2407’ host='w4111db.eastus.cloudapp.azure.com' password=‘LXSZEJ’

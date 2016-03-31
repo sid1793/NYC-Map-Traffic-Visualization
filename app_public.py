@@ -142,14 +142,14 @@ def wordCloud():
 def sendCount():
 	camname = json.loads(request.form['name'])
 	row = []
-	for i in range(3):
+	for i in range(7,10):
 		qry = "select count(*) from (select imageid from images where camname=\'"+str(camname)+"\') as I, (select imageid from detection_in where objid="+str((i+1))+") as D where I.imageid=D.imageid;" 
 		try:
 			cur.execute(qry)
 		except Exception,e:
 			print e
 		row.append(int(list(cur.fetchone())[0]))
-	print row
+	print qry
 	return json.dumps(row)
 
 @app.route("/wazeAlert",methods=['POST'])
