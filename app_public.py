@@ -205,20 +205,6 @@ def sendCount():
 	print qry
 	return json.dumps(row)
 
-@app.route("/wazeAlert",methods=['POST'])
-def wazeLevel():
-	level = int(json.loads(request.form['level']))
-	print level
-	qry = "select count(*) from tweets as T, (select location_lat, location_long, time from jams where level="+str(level)+" limit 200) as J where T.lat between J.location_lat-0.001 and J.location_lat+0.001 and T.long between J.location_long-0.001 and J.location_long+0.001 and T.time - J.time < interval '1 hour';"
-	print qry
-	try:
-		cur.execute(qry)
-	except Exception,e:
-		print e
-	number = int(cur.fetchone()[0])
-	print number
-	return jsonify(num=number)
-
 @app.route("/event",methods=['POST'])
 def createEvent():
 	name = str(request.form['event_name'])

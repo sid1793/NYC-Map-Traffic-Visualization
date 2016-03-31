@@ -251,15 +251,6 @@ function createEvent2(){
   );
 }
 
-function wazelevel(a){
-  $.post('/wazeAlert',{
-    level:a
-  },function getData(data){
-  console.log('Hi')
-  document.getElementById('waze').innerHTML = data.num
-  });
-}
-
 function update_wordcloud ()
 {
     var sD = gStartDate.toLocaleDateString();
