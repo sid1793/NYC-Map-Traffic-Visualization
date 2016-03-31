@@ -1,5 +1,1 @@
- leaf map: http://leafletjs.com/ - done!
- 
- heatmap: https://github.com/sunng87/heatcanvas - done!
- 
- time selection: http://square.github.io/crossfilter/ - done!
+A simple webapp to visualize traffic data in New York City using images from traffic cameras, Twitter and Waze data.
