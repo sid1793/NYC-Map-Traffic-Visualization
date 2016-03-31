@@ -120,6 +120,51 @@
 						</form>
                     </div>
 
+                    <div style = "margin: 20px">
+                        <table>
+                            <tr>
+                                <td>Car: </td>
+                                <td id="car"><td>
+                            </tr>
+                            <tr>
+                                <td>Bus: </td>
+                                <td id="bus"><td>
+                            </tr>
+                            <tr>
+                                <td>Person: </td>
+                                <td id="person"><td>
+                            </tr>
+
+                            <tr>
+                                <td>Number of tweets in the vicinity of selected Waze traffic Level:</td>
+                                    <td id = "waze"></td>
+
+                            </tr>
+
+                        </table>
+                       
+                        <select name="select" onchange="wazelevel(this.value)" style = "margin: 20px">
+                            <option value=0 selected>Select Waze Level</option> 
+                            <option value=1 >1</option> 
+                            <option value=2>2</option>
+                            <option value=3>3</option>
+                            <option value=4>4</option>
+                            <option value=5>5</option>
+                        </select>
+
+                        <div style = "margin: 20px">
+                                <label for="name">Name:</label>
+                                <input type="text" id="eventname" name="event_name" style="width:315px" value="Please draw bounding box and set time of event"/>
+                            </div>
+                            <div style = "margin: 20px">
+                                <div class="button">
+                                <button type="submit" onclick="createEvent2()">Create Event</button>
+                            </div>
+                        
+                    </div>
+
+
+
                     <div class="dropdown" style = "margin: 20px">
                         <!-- Link or button to toggle dropdown -->
                         <!-- <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Alert Type -->
