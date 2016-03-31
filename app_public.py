@@ -6,14 +6,18 @@ from datetime import datetime
 from pprint import pprint
 import json
 from wordcloud import WordCloud
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import re
+import random
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
 
+
 try:
-	conn = psycopg2.connect("dbname='sm4083' user='sm4083' host='w4111db.eastus.cloudapp.azure.com' password='RPTDAA'")
+	conn = psycopg2.connect("dbname='az2407' user='az2407' host='w4111db.eastus.cloudapp.azure.com' password='LXSZEJ'")
 	conn.autocommit= True
 except Exception, e:
 	print e, "Connection Unsucessful"
@@ -22,14 +26,7 @@ cur = conn.cursor()
 
 @app.route('/',methods=["GET","POST"])
 def homepage():
-	if request.method == 'GET':
-		try:
-			cur.execute("select distinct name,location_lat,location_long from camera as C, images as I where C.name = I.camname")
-		except Exception,e:
-			print e
-	data = cur.fetchall()
-	print data[0]
-	return render_template("index.html", cam_data = json.dumps(data))
+	return render_template("index.html")
 	
 @app.route("/about.html")
 def about():
@@ -42,6 +39,27 @@ def blog():
 @app.route("/contact.html")
 def contact():
 	return render_template("contact.html")
+
+@app.route("/camcoords")
+def camcoords():
+	try:
+		cur.execute("select distinct name,location_lat,location_long from camera as C, images as I where C.name = I.camname")
+	except Exception,e:
+		print e
+	data = cur.fetchall()
+	print data[0]
+	return jsonify(coords = data)
+
+@app.route("/alltweets")
+def alltweets():
+	try:
+		cur.execute("select time from tweets")
+	except Exception,e:
+		print e
+	data = cur.fetchall()
+	print data[0]
+	rand_smpl = [ data[i] for i in sorted(random.sample(xrange(len(data)), 1000)) ]
+	return jsonify(tweets = rand_smpl)
 
 @app.route("/images")
 def images():
