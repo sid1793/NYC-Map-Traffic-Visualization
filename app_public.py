@@ -102,7 +102,12 @@ def waze_twitter():
 		#do something
 		#parse the data
 		print("for TWITTER")
-		words=shlex.split(keywords)
+		words=shlex.split(keywords) ##### THIS AVOIDS SINGLE (without closing) QUOTATION, so avoids injection
+		print(words)
+
+		for word in words:
+			word = re.sub('[^A-Za-z0-9 -#]+', '', word) ##### AVOIDING SPECIAL CHARACTERS
+
 		print(words)
 
 		qry = "SELECT lat, long from tweets WHERE time::date BETWEEN '"+startD+"' and '"+endD+"' \
